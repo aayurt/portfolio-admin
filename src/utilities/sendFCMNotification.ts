@@ -86,7 +86,7 @@ export const sendFCMTopicNotification = async ({
       data: {
         link: notification.link || '',
         topic: topic,
-        id: notification.id || '',
+        id: notification.id?.toString() || '',
       },
       topic,
     }
