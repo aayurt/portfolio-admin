@@ -24,6 +24,7 @@ import { Promotions } from './collections/Promotions'
 import { Reviews } from './collections/Reviews'
 import { OpeningHours } from './collections/OpeningHours'
 import { Events } from './collections/Events'
+import { EventTickets } from './collections/EventTickets'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -86,6 +87,7 @@ export default buildConfig({
     Reviews,
     OpeningHours,
     Events,
+    EventTickets,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

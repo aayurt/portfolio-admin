@@ -80,6 +80,7 @@ export interface Config {
     reviews: Review;
     'opening-hours': OpeningHour;
     events: Event;
+    'event-tickets': EventTicket;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -104,6 +105,7 @@ export interface Config {
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     'opening-hours': OpeningHoursSelect<false> | OpeningHoursSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    'event-tickets': EventTicketsSelect<false> | EventTicketsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1018,6 +1020,29 @@ export interface Event {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-tickets".
+ */
+export interface EventTicket {
+  id: number;
+  eventId: number | Event;
+  firstName: string;
+  lastName: string;
+  email: string;
+  contactNumber: string;
+  numberOfTickets: number;
+  status: 'pending' | 'approved' | 'rejected';
+  appliedAt: string;
+  respondedAt?: string | null;
+  notes?: string | null;
+  /**
+   * Admin notes or rejection reason
+   */
+  adminNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1241,6 +1266,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'events';
         value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'event-tickets';
+        value: number | EventTicket;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1789,6 +1818,25 @@ export interface EventsSelect<T extends boolean = true> {
   startDatetime?: T;
   endDatetime?: T;
   enabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-tickets_select".
+ */
+export interface EventTicketsSelect<T extends boolean = true> {
+  eventId?: T;
+  firstName?: T;
+  lastName?: T;
+  email?: T;
+  contactNumber?: T;
+  numberOfTickets?: T;
+  status?: T;
+  appliedAt?: T;
+  respondedAt?: T;
+  notes?: T;
+  adminNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
