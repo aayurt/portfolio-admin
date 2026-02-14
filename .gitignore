@@ -12,3 +12,5 @@ public/media/
 public/robots.txt
 public/sitemap*.xml
 serviceAccountKey.json
+next.zip
+.env.production

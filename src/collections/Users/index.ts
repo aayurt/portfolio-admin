@@ -21,7 +21,7 @@ const defaultTenantArrayField = tenantsArrayField({
       defaultValue: ['tenant-viewer'],
       hasMany: true,
       options: ['tenant-admin', 'tenant-viewer'],
-      required: false,
+      required: true,
     },
   ],
 })

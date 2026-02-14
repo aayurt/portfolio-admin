@@ -280,8 +280,8 @@ export interface Tenant {
      */
     github?: string | null;
   };
-  description?: string | null;
   logo?: (number | null) | Media;
+  description?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -459,7 +459,7 @@ export interface User {
   tenants?:
     | {
         tenant: number | Tenant;
-        roles?: ('tenant-admin' | 'tenant-viewer')[] | null;
+        roles: ('tenant-admin' | 'tenant-viewer')[];
         id?: string | null;
       }[]
     | null;
@@ -1513,8 +1513,8 @@ export interface TenantsSelect<T extends boolean = true> {
         linkedin?: T;
         github?: T;
       };
-  description?: T;
   logo?: T;
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }

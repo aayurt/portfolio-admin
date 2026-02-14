@@ -19,7 +19,7 @@ import { isSuperAdmin } from '@/access/isSuperAdmin'
 import { getUserTenantIDs } from '@/utilities/getUserTenantIDs'
 
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | ${doc.tenant}` : 'My Portfolio'
+  return doc?.title ? `${doc.title} | ${doc.tenant}` : 'Portfolio Manager'
 }
 
 const generateURL: GenerateURL<Post | Page> = ({ doc }) => {

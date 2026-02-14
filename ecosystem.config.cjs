@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'afno-app',
+      name: 'multi-tenant-portfolio',
       script: '.next/standalone/server.js',
       instances: 'max',
       exec_mode: 'cluster',
