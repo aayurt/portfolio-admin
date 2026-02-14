@@ -9,10 +9,10 @@ import { searchPlugin } from '@payloadcms/plugin-search'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
-import { Plugin } from 'payload'
+import { PayloadRequest, Plugin } from 'payload'
 
 import { isAdmin } from '@/access/admin'
-import { Config, Page, Post } from '@/payload-types'
+import { Config, Page, Post, User } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { isSuperAdmin } from '@/access/isSuperAdmin'
@@ -126,19 +126,14 @@ export const plugins: Plugin[] = [
       users: {},
       media: {},
       forms: {},
-      menu: {},
-      'food-categories': {},
-      'form-submissions': {},
-      'menu-items': {},
       redirects: {},
-      promotions: {},
-      reviews: {},
-      'opening-hours': {},
+      projects: {},
+      abouts: {},
     },
     tenantField: {
       access: {
         read: () => true,
-        update: ({ req }) => {
+        update: ({ req }: { req: PayloadRequest }) => {
           if (isSuperAdmin(req.user)) {
             return true
           }
@@ -149,6 +144,6 @@ export const plugins: Plugin[] = [
     tenantsArrayField: {
       includeDefaultField: false,
     },
-    userHasAccessToAllTenants: (user) => isSuperAdmin(user),
+    userHasAccessToAllTenants: (user: User) => isSuperAdmin(user),
   }),
 ]

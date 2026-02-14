@@ -27,26 +27,6 @@ const nextConfig = {
           protocol: url.protocol.replace(':', ''),
         }
       }),
-      {
-        hostname: `chowmien.localhost`,
-        protocol: 'http',
-      },
-      {
-        hostname: `chilim.localhost`,
-        protocol: 'http',
-      },
-      {
-        hostname: `momo.localhost`,
-        protocol: 'http',
-      },
-      {
-        hostname: `momo.aayushshrestha.com`,
-        protocol: 'https',
-      },
-      // {
-      //   protocol: 'http',
-      //   hostname: '**.localhost',
-      // },
     ],
   },
   reactStrictMode: true,

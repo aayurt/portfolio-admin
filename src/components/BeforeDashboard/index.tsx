@@ -15,6 +15,7 @@ const BeforeDashboard: React.FC = () => {
       <Banner className={`${baseClass}__banner`} type="success">
         <h4>Welcome to your {tenant.selectedTenantID} dashboard!</h4>
       </Banner>
+      <SeedButton />
       {/* Here&apos;s what to do next:
       <ul className={`${baseClass}__instructions`}>
         <li>

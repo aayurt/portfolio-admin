@@ -67,6 +67,77 @@ export const Tenants: CollectionConfig = {
         },
       ],
     },
+
+    {
+      name: 'domain',
+      type: 'text',
+      admin: {
+        description: 'Used for domain-based tenant handling',
+      },
+    },
+
+    {
+      name: 'slug',
+      type: 'text',
+      admin: {
+        description: 'Used for url paths, example: /tenant-slug/page-slug',
+        position: 'sidebar',
+      },
+      index: true,
+      required: true,
+    },
+    {
+      name: 'allowPublicRead',
+      type: 'checkbox',
+      admin: {
+        description:
+          'If checked, logging in is not required to read. Useful for building public pages.',
+        position: 'sidebar',
+      },
+      defaultValue: false,
+      index: true,
+    },
+    {
+      name: 'avatar',
+      type: 'upload',
+      relationTo: 'media',
+    },
+    {
+      name: 'email',
+      type: 'email',
+    },
+    {
+      name: 'location',
+      type: 'text',
+    },
+    {
+      name: 'languages',
+      type: 'array',
+      fields: [
+        {
+          name: 'language',
+          type: 'text',
+        },
+      ],
+    },
+    {
+      name: 'links',
+      type: 'array',
+      fields: [
+        {
+          name: 'platform',
+          type: 'text',
+        },
+        {
+          name: 'url',
+          type: 'text',
+        },
+        {
+          name: 'icon',
+          type: 'text',
+        },
+      ],
+    },
     {
       name: 'socialMedia',
       type: 'group',
@@ -99,36 +170,14 @@ export const Tenants: CollectionConfig = {
             description: 'LinkedIn profile URL',
           },
         },
+        {
+          name: 'github',
+          type: 'text',
+          admin: {
+            description: 'Github profile URL',
+          },
+        },
       ],
-    },
-    {
-      name: 'domain',
-      type: 'text',
-      admin: {
-        description: 'Used for domain-based tenant handling',
-      },
-    },
-   
-    {
-      name: 'slug',
-      type: 'text',
-      admin: {
-        description: 'Used for url paths, example: /tenant-slug/page-slug',
-        position: 'sidebar',
-      },
-      index: true,
-      required: true,
-    },
-    {
-      name: 'allowPublicRead',
-      type: 'checkbox',
-      admin: {
-        description:
-          'If checked, logging in is not required to read. Useful for building public pages.',
-        position: 'sidebar',
-      },
-      defaultValue: false,
-      index: true,
     },
   ],
 }
