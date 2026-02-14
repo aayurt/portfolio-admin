@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 export const Abouts: CollectionConfig = {
-  slug: 'about',
+  slug: 'abouts',
   admin: {
     group: "Tenants"
   },

@@ -74,7 +74,7 @@ export interface Config {
     users: User;
     tenants: Tenant;
     projects: Project;
-    about: About;
+    abouts: About;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -93,7 +93,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
-    about: AboutSelect<false> | AboutSelect<true>;
+    abouts: AboutsSelect<false> | AboutsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -280,6 +280,8 @@ export interface Tenant {
      */
     github?: string | null;
   };
+  description?: string | null;
+  logo?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -849,10 +851,11 @@ export interface Project {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "about".
+ * via the `definition` "abouts".
  */
 export interface About {
   id: number;
+  tenant?: (number | null) | Tenant;
   intro?: {
     root: {
       type: string;
@@ -1096,7 +1099,7 @@ export interface PayloadLockedDocument {
         value: number | Project;
       } | null)
     | ({
-        relationTo: 'about';
+        relationTo: 'abouts';
         value: number | About;
       } | null)
     | ({
@@ -1510,6 +1513,8 @@ export interface TenantsSelect<T extends boolean = true> {
         linkedin?: T;
         github?: T;
       };
+  description?: T;
+  logo?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1532,9 +1537,10 @@ export interface ProjectsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "about_select".
+ * via the `definition` "abouts_select".
  */
-export interface AboutSelect<T extends boolean = true> {
+export interface AboutsSelect<T extends boolean = true> {
+  tenant?: T;
   intro?: T;
   skills?:
     | T

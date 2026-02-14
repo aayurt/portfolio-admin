@@ -31,31 +31,31 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
     pagination: false,
     ...(query
       ? {
-          where: {
-            or: [
-              {
-                title: {
-                  like: query,
-                },
+        where: {
+          or: [
+            {
+              title: {
+                like: query,
               },
-              {
-                'meta.description': {
-                  like: query,
-                },
+            },
+            {
+              'meta.description': {
+                like: query,
               },
-              {
-                'meta.title': {
-                  like: query,
-                },
+            },
+            {
+              'meta.title': {
+                like: query,
               },
-              {
-                slug: {
-                  like: query,
-                },
+            },
+            {
+              slug: {
+                like: query,
               },
-            ],
-          },
-        }
+            },
+          ],
+        },
+      }
       : {}),
   })
 
@@ -83,6 +83,6 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
 
 export function generateMetadata(): Metadata {
   return {
-    title: `Afno Restaurant Search`,
+    title: `My Portfolio Search`,
   }
 }

@@ -19,7 +19,7 @@ export const homeStatic: RequiredDataFromCollectionSlug<'pages'> = {
                 format: 0,
                 mode: 'normal',
                 style: '',
-                text: 'Afno Restaurant',
+                text: 'My Portfolio',
                 version: 1,
               },
             ],
@@ -81,7 +81,7 @@ export const homeStatic: RequiredDataFromCollectionSlug<'pages'> = {
   },
   meta: {
     description: 'An open-source website built with Payload and Next.js.',
-    title: 'Afno Restaurant',
+    title: 'My Portfolio',
   },
   title: 'Home',
   layout: [],

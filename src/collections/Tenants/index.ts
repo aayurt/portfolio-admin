@@ -179,5 +179,16 @@ export const Tenants: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'description',
+      type: 'text',
+      // required: true,
+    },
+    {
+      name: 'logo',
+      type: 'upload',
+      relationTo: 'media',
+      hidden: true,
+    },
   ],
 }

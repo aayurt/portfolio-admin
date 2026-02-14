@@ -15,7 +15,7 @@ export const Logo = (props: Props) => {
 
   return (
     /* eslint-disable @next/next/no-img-element */
-    <h1 className="text-4xl">Afno Restaurant</h1>
+    <h1 className="text-4xl">My Portfolio</h1>
     // <img
     //   alt="Payload Logo"
     //   width={193}

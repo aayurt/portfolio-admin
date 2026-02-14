@@ -1,3 +1,5 @@
+/* tslint:disable */
+/* eslint-disable */
 import { Tenant } from '@/payload-types'
 import fs from 'fs'
 import path from 'path'
@@ -272,11 +274,107 @@ export const seed = async ({
         ...project,
         tenant: aayurtTenant.id,
         images: relatedImages.length > 0 ? relatedImages : undefined,
-      },
+      } as any,
       req,
     })
+
+    const abouts = [
+      {
+        "intro": {
+          "root": {
+            "type": "root",
+            "children": [
+              {
+                "type": "paragraph",
+                "children": [
+                  {
+                    "type": "text",
+                    "detail": 0,
+                    "format": 0,
+                    "mode": "normal",
+                    "style": "",
+                    "text": "Full-stack software engineer with a curious mindset and a passion for building thoughtful, high-quality products. I combine technical depth with an entrepreneurial approach — taking ownership, driving initiatives forward, and delivering real, measurable results. Known for my energy, adaptability, and bias toward action, I focus on creating meaningful impact rather than just shipping features."
+                  }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "textFormat": 0,
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "version": 1
+          }
+        },
+        "skills": [
+          { "skill": "Next.js" },
+          { "skill": "React" },
+          { "skill": "TypeScript" },
+          { "skill": "Node.js" },
+          { "skill": "PostgreSQL" },
+          { "skill": "MongoDB" },
+          { "skill": "Flutter" },
+          { "skill": "Python" },
+          { "skill": "AWS" },
+          { "skill": "Docker" },
+          { "skill": "Git" },
+          { "skill": "Figma" },
+          { "skill": "Tailwind CSS" },
+          { "skill": "Shadcn UI" },
+          { "skill": "Once UI" },
+          { "skill": "Payload CMS" }
+        ],
+        "workExperience": [
+          {
+            "company": "Pageup People",
+            "role": "Software Engineer",
+            "period": "Oct 2023 - Jun 2025",
+            "description": "Led architecture and delivery of scalable features within a multi-tenant recruitment marketing platform. Built a real-time, Slack-style chat system. Designed batch and streaming pipelines. Integrated AI/LLM-powered features. Led frontend modernisation using Next.js."
+          },
+          {
+            "company": "MobileKraft",
+            "role": "Software Engineer",
+            "period": "Sep 2022 - Jul 2023",
+            "description": "Designed and developed bespoke full-stack web and Flutter mobile applications. Owned features end-to-end. Built a visual API query editor. Implemented Redis caching."
+          },
+          {
+            "company": "Himalayan Techies",
+            "role": "Software Engineer",
+            "period": "Dec 2019 - Jul 2022",
+            "description": "Delivered full-stack features across multiple government and client applications. Built offline-first solutions. Developed transaction tracking tools."
+          }
+        ],
+        "education": [
+          {
+            "institution": "Kingston University | London",
+            "degree": "Masters in Software engineering with management studies",
+            "period": ""
+          },
+          {
+            "institution": "Patan Campus | Lalitpur, Nepal",
+            "degree": "Bachelors in Computer Science and Information Technology",
+            "period": ""
+          }
+        ]
+      }
+    ];
+
+    abouts.map(async (about) => {
+      await payload.create({
+        collection: 'abouts',
+        data: {
+          ...about,
+          tenant: 11,
+        } as any,
+        req,
+      })
+    })
+
+
+
+    payload.logger.info('Seeded database successfully!')
   }
-
-  payload.logger.info('Seeded database successfully!')
 }
-

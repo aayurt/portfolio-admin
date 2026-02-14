@@ -53,14 +53,16 @@ export default async function Page({ params: paramsPromise }: Args) {
   const host = (await headers()).get('host') || ''
   const domain = host.split('.')[0]
 
-  // page = await queryPageBySlug({
-  //   slug,
-  //   domain,
-  // })
-  // console.log('page', page)
+  page = await queryPageBySlug({
+    slug,
+    domain,
+  })
+  console.log('page', page)
 
   // Remove this code once your website is seeded
-  page = homeStatic
+  if (!page && slug === 'home') {
+    page = homeStatic
+  }
 
   if (!page) {
     return <PayloadRedirects url={url} />
@@ -93,4 +95,43 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 }
 
 const queryPageBySlug = cache(async ({ slug, domain }: { slug: string; domain?: string }) => {
+  const { isEnabled: draft } = await draftMode()
+
+  const payload = await getPayload({ config: configPromise })
+  // First find the tenant
+  const tenant = await payload.find({
+    collection: 'tenants',
+    where: {
+      domain: {
+        equals: domain,
+      },
+    },
+  })
+
+  const result = await payload.find({
+    collection: 'pages',
+    draft,
+    limit: 1,
+    pagination: false,
+    // overrideAccess: draft,
+    where: {
+      // slug: {
+      //   equals: slug,
+      // },
+      and: [
+        {
+          tenant: {
+            equals: tenant.docs[0]?.id,
+          },
+        },
+        {
+          slug: {
+            equals: slug,
+          },
+        },
+      ],
+    },
+  })
+
+  return result.docs?.[0] || null
 })
