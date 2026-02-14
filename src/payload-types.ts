@@ -73,14 +73,6 @@ export interface Config {
     categories: Category;
     users: User;
     tenants: Tenant;
-    menu: Menu;
-    'food-categories': FoodCategory;
-    'menu-items': MenuItem;
-    promotions: Promotion;
-    reviews: Review;
-    'opening-hours': OpeningHour;
-    events: Event;
-    'event-tickets': EventTicket;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -98,14 +90,6 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
-    menu: MenuSelect<false> | MenuSelect<true>;
-    'food-categories': FoodCategoriesSelect<false> | FoodCategoriesSelect<true>;
-    'menu-items': MenuItemsSelect<false> | MenuItemsSelect<true>;
-    promotions: PromotionsSelect<false> | PromotionsSelect<true>;
-    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
-    'opening-hours': OpeningHoursSelect<false> | OpeningHoursSelect<true>;
-    events: EventsSelect<false> | EventsSelect<true>;
-    'event-tickets': EventTicketsSelect<false> | EventTicketsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -237,15 +221,6 @@ export interface Tenant {
    * If checked, the tenant will be shown on the website. If not checked, the tenant will not be shown on the website.
    */
   enabled?: boolean | null;
-  logo?: (number | null) | Media;
-  coverImage?: (number | null) | Media;
-  gallery?:
-    | {
-        image?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  description?: string | null;
   contactInfo?: {
     phone?: string | null;
     email?: string | null;
@@ -273,52 +248,6 @@ export interface Tenant {
    */
   domain?: string | null;
   /**
-   * Restaurant location coordinates
-   */
-  location?: {
-    /**
-     * Location of the restaurant location
-     */
-    location?: string | null;
-    /**
-     * Map address of the restaurant location for google maps
-     */
-    'Map location'?: string | null;
-    /**
-     * Latitude coordinate of the restaurant location
-     */
-    latitude?: number | null;
-    /**
-     * Longitude coordinate of the restaurant location
-     */
-    longitude?: number | null;
-  };
-  MenuGallery?:
-    | {
-        image?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Restaurant opening hours
-   */
-  OpeningHour?: {
-    mondayOpenTime?: string | null;
-    mondayCloseTime?: string | null;
-    tuesdayOpenTime?: string | null;
-    tuesdayCloseTime?: string | null;
-    wednesdayOpenTime?: string | null;
-    wednesdayCloseTime?: string | null;
-    thursdayOpenTime?: string | null;
-    thursdayCloseTime?: string | null;
-    fridayOpenTime?: string | null;
-    fridayCloseTime?: string | null;
-    saturdayOpenTime?: string | null;
-    saturdayCloseTime?: string | null;
-    sundayOpenTime?: string | null;
-    sundayCloseTime?: string | null;
-  };
-  /**
    * Used for url paths, example: /tenant-slug/page-slug
    */
   slug: string;
@@ -328,6 +257,54 @@ export interface Tenant {
   allowPublicRead?: boolean | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  heroImage?: (number | null) | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  relatedPosts?: (number | Post)[] | null;
+  categories?: (number | Category)[] | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  authors?: (number | User)[] | null;
+  populatedAuthors?:
+    | {
+        id?: string | null;
+        name?: string | null;
+      }[]
+    | null;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -421,54 +398,6 @@ export interface Media {
       filename?: string | null;
     };
   };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
- */
-export interface Post {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  title: string;
-  heroImage?: (number | null) | Media;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  relatedPosts?: (number | Post)[] | null;
-  categories?: (number | Category)[] | null;
-  meta?: {
-    title?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-    description?: string | null;
-  };
-  publishedAt?: string | null;
-  authors?: (number | User)[] | null;
-  populatedAuthors?:
-    | {
-        id?: string | null;
-        name?: string | null;
-      }[]
-    | null;
-  slug?: string | null;
-  slugLock?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -863,186 +792,6 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "menu".
- */
-export interface Menu {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  name: string;
-  description?: string | null;
-  gallery?:
-    | {
-        image?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "food-categories".
- */
-export interface FoodCategory {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  name: string;
-  menu: number | Menu;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "menu-items".
- */
-export interface MenuItem {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  name: string;
-  description?: string | null;
-  /**
-   * Price in your local currency
-   */
-  price: number;
-  image: number | Media;
-  foodCategory: number | FoodCategory;
-  tags?: ('vegan' | 'vegetarian' | 'spicy' | 'gluten-free' | 'dairy-free' | 'nuts')[] | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "promotions".
- */
-export interface Promotion {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  title: string;
-  description?: string | null;
-  discountType: 'percentage' | 'fixed';
-  /**
-   * For percentage, enter a value between 0 and 100. For fixed amount, enter the discount amount.
-   */
-  value: number;
-  startDate: string;
-  endDate: string;
-  /**
-   * Optional: Select a specific menu item for this promotion. If none selected, the promotion applies globally.
-   */
-  menuItem?: (number | null) | MenuItem;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "reviews".
- */
-export interface Review {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  /**
-   * Rating from 1 to 5 stars
-   */
-  rating: number;
-  comment: string;
-  image?: (number | null) | Media;
-  user: number | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "opening-hours".
- */
-export interface OpeningHour {
-  id: number;
-  tenant?: (number | null) | Tenant;
-  dayOfWeek: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
-  /**
-   * Select opening time
-   */
-  openTime: string;
-  /**
-   * Select closing time
-   */
-  closeTime: string;
-  /**
-   * Check this box to mark this day as temporarily closed
-   */
-  isClosed: boolean;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "events".
- */
-export interface Event {
-  id: number;
-  title: string;
-  description?: string | null;
-  coverImage?: (number | null) | Media;
-  gallery?:
-    | {
-        image?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Event location coordinates
-   */
-  location?: {
-    /**
-     * Location of the event location
-     */
-    location?: string | null;
-    /**
-     * Map address of the event location for google maps
-     */
-    'Map location'?: string | null;
-    /**
-     * Latitude coordinate of the event location
-     */
-    latitude?: number | null;
-    /**
-     * Longitude coordinate of the event location
-     */
-    longitude?: number | null;
-  };
-  startDatetime?: string | null;
-  endDatetime?: string | null;
-  /**
-   * Enable or disable this event
-   */
-  enabled: boolean;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "event-tickets".
- */
-export interface EventTicket {
-  id: number;
-  eventId: number | Event;
-  firstName: string;
-  lastName: string;
-  email: string;
-  contactNumber: string;
-  numberOfTickets: number;
-  status: 'pending' | 'approved' | 'rejected';
-  appliedAt: string;
-  respondedAt?: string | null;
-  notes?: string | null;
-  /**
-   * Admin notes or rejection reason
-   */
-  adminNotes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1238,38 +987,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tenants';
         value: number | Tenant;
-      } | null)
-    | ({
-        relationTo: 'menu';
-        value: number | Menu;
-      } | null)
-    | ({
-        relationTo: 'food-categories';
-        value: number | FoodCategory;
-      } | null)
-    | ({
-        relationTo: 'menu-items';
-        value: number | MenuItem;
-      } | null)
-    | ({
-        relationTo: 'promotions';
-        value: number | Promotion;
-      } | null)
-    | ({
-        relationTo: 'reviews';
-        value: number | Review;
-      } | null)
-    | ({
-        relationTo: 'opening-hours';
-        value: number | OpeningHour;
-      } | null)
-    | ({
-        relationTo: 'events';
-        value: number | Event;
-      } | null)
-    | ({
-        relationTo: 'event-tickets';
-        value: number | EventTicket;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1647,15 +1364,6 @@ export interface UsersSelect<T extends boolean = true> {
 export interface TenantsSelect<T extends boolean = true> {
   name?: T;
   enabled?: T;
-  logo?: T;
-  coverImage?: T;
-  gallery?:
-    | T
-    | {
-        image?: T;
-        id?: T;
-      };
-  description?: T;
   contactInfo?:
     | T
     | {
@@ -1671,172 +1379,8 @@ export interface TenantsSelect<T extends boolean = true> {
         linkedin?: T;
       };
   domain?: T;
-  location?:
-    | T
-    | {
-        location?: T;
-        'Map location'?: T;
-        latitude?: T;
-        longitude?: T;
-      };
-  MenuGallery?:
-    | T
-    | {
-        image?: T;
-        id?: T;
-      };
-  OpeningHour?:
-    | T
-    | {
-        mondayOpenTime?: T;
-        mondayCloseTime?: T;
-        tuesdayOpenTime?: T;
-        tuesdayCloseTime?: T;
-        wednesdayOpenTime?: T;
-        wednesdayCloseTime?: T;
-        thursdayOpenTime?: T;
-        thursdayCloseTime?: T;
-        fridayOpenTime?: T;
-        fridayCloseTime?: T;
-        saturdayOpenTime?: T;
-        saturdayCloseTime?: T;
-        sundayOpenTime?: T;
-        sundayCloseTime?: T;
-      };
   slug?: T;
   allowPublicRead?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "menu_select".
- */
-export interface MenuSelect<T extends boolean = true> {
-  tenant?: T;
-  name?: T;
-  description?: T;
-  gallery?:
-    | T
-    | {
-        image?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "food-categories_select".
- */
-export interface FoodCategoriesSelect<T extends boolean = true> {
-  tenant?: T;
-  name?: T;
-  menu?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "menu-items_select".
- */
-export interface MenuItemsSelect<T extends boolean = true> {
-  tenant?: T;
-  name?: T;
-  description?: T;
-  price?: T;
-  image?: T;
-  foodCategory?: T;
-  tags?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "promotions_select".
- */
-export interface PromotionsSelect<T extends boolean = true> {
-  tenant?: T;
-  title?: T;
-  description?: T;
-  discountType?: T;
-  value?: T;
-  startDate?: T;
-  endDate?: T;
-  menuItem?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "reviews_select".
- */
-export interface ReviewsSelect<T extends boolean = true> {
-  tenant?: T;
-  rating?: T;
-  comment?: T;
-  image?: T;
-  user?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "opening-hours_select".
- */
-export interface OpeningHoursSelect<T extends boolean = true> {
-  tenant?: T;
-  dayOfWeek?: T;
-  openTime?: T;
-  closeTime?: T;
-  isClosed?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "events_select".
- */
-export interface EventsSelect<T extends boolean = true> {
-  title?: T;
-  description?: T;
-  coverImage?: T;
-  gallery?:
-    | T
-    | {
-        image?: T;
-        id?: T;
-      };
-  location?:
-    | T
-    | {
-        location?: T;
-        'Map location'?: T;
-        latitude?: T;
-        longitude?: T;
-      };
-  startDatetime?: T;
-  endDatetime?: T;
-  enabled?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "event-tickets_select".
- */
-export interface EventTicketsSelect<T extends boolean = true> {
-  eventId?: T;
-  firstName?: T;
-  lastName?: T;
-  email?: T;
-  contactNumber?: T;
-  numberOfTickets?: T;
-  status?: T;
-  appliedAt?: T;
-  respondedAt?: T;
-  notes?: T;
-  adminNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

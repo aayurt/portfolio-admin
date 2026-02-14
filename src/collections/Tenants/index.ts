@@ -52,34 +52,6 @@ export const Tenants: CollectionConfig = {
       },
     },
     {
-      name: 'logo',
-      type: 'upload',
-      relationTo: 'media',
-      hidden: true,
-    },
-    {
-      name: 'coverImage',
-      type: 'upload',
-      relationTo: 'media',
-      // required: true,
-    },
-    {
-      name: 'gallery',
-      type: 'array',
-      fields: [
-        {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-        },
-      ],
-    },
-    {
-      name: 'description',
-      type: 'text',
-      // required: true,
-    },
-    {
       name: 'contactInfo',
       type: 'group',
       fields: [
@@ -136,101 +108,7 @@ export const Tenants: CollectionConfig = {
         description: 'Used for domain-based tenant handling',
       },
     },
-    {
-      name: 'location',
-      type: 'group',
-      fields: [
-        {
-          name: 'location',
-          type: 'text',
-          required: false,
-          admin: {
-            description: 'Location of the restaurant location',
-          },
-        },
-        {
-          name: 'Map location',
-          type: 'text',
-          required: false,
-          admin: {
-            description: 'Map address of the restaurant location for google maps',
-          },
-        },
-        {
-          name: 'latitude',
-          type: 'number',
-          required: false,
-          admin: {
-            description: 'Latitude coordinate of the restaurant location',
-            step: 0.000001,
-          },
-        },
-        {
-          name: 'longitude',
-          type: 'number',
-          required: false,
-          admin: {
-            description: 'Longitude coordinate of the restaurant location',
-            step: 0.000001,
-          },
-        },
-      ],
-      admin: {
-        description: 'Restaurant location coordinates',
-      },
-    },
-    {
-      name: 'MenuGallery',
-      type: 'array',
-      fields: [
-        {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-        },
-      ],
-    },
-    {
-      name: 'OpeningHour',
-      type: 'group',
-      fields: [
-        { label: 'Monday', value: 'monday' },
-        { label: 'Tuesday', value: 'tuesday' },
-        { label: 'Wednesday', value: 'wednesday' },
-        { label: 'Thursday', value: 'thursday' },
-        { label: 'Friday', value: 'friday' },
-        { label: 'Saturday', value: 'saturday' },
-        { label: 'Sunday', value: 'sunday' },
-      ].flatMap((day) => [
-        {
-          name: `${day.value}OpenTime`,
-          type: 'date',
-          defaultValue: '2025-05-28T07:30:00.312Z',
-          admin: {
-            // description: `${day.label} Opening time`,
-            date: {
-              pickerAppearance: 'timeOnly',
-              displayFormat: 'h:mm a',
-            },
-          },
-        },
-        {
-          name: `${day.value}CloseTime`,
-          type: 'date',
-          defaultValue: new Date('1970-01-01T18:00:00.000Z').toISOString(),
-          admin: {
-            // description: `${day.label} Closing time`,
-            date: {
-              pickerAppearance: 'timeOnly',
-              displayFormat: 'h:mm a',
-            },
-          },
-        },
-      ]),
-      admin: {
-        description: 'Restaurant opening hours',
-      },
-    },
+   
     {
       name: 'slug',
       type: 'text',

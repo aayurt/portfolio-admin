@@ -1,30 +1,22 @@
 // storage-adapter-import-placeholder
-import { postgresAdapter } from '@payloadcms/db-postgres'
+import { postgresAdapter } from '@payloadcms/db-postgres';
 
-import sharp from 'sharp' // sharp-import
-import path from 'path'
-import { buildConfig, PayloadRequest } from 'payload'
-import { fileURLToPath } from 'url'
+import path from 'path';
+import { buildConfig, PayloadRequest } from 'payload';
+import sharp from 'sharp'; // sharp-import
+import { fileURLToPath } from 'url';
 
-import { Categories } from './collections/Categories'
-import { Media } from './collections/Media'
-import { Pages } from './collections/Pages'
-import { Posts } from './collections/Posts'
-import { Users } from './collections/Users'
-import { Footer } from './Footer/config'
-import { Header } from './Header/config'
-import { plugins } from './plugins'
-import { defaultLexical } from '@/fields/defaultLexical'
-import { getServerSideURL } from './utilities/getURL'
-import { Tenants } from './collections/Tenants'
-import { Menu } from './collections/Menu'
-import { FoodCategory } from './collections/FoodCategory'
-import { MenuItem } from './collections/MenuItem'
-import { Promotions } from './collections/Promotions'
-import { Reviews } from './collections/Reviews'
-import { OpeningHours } from './collections/OpeningHours'
-import { Events } from './collections/Events'
-import { EventTickets } from './collections/EventTickets'
+import { defaultLexical } from '@/fields/defaultLexical';
+import { Categories } from './collections/Categories';
+import { Media } from './collections/Media';
+import { Pages } from './collections/Pages';
+import { Posts } from './collections/Posts';
+import { Tenants } from './collections/Tenants';
+import { Users } from './collections/Users';
+import { Footer } from './Footer/config';
+import { Header } from './Header/config';
+import { plugins } from './plugins';
+import { getServerSideURL } from './utilities/getURL';
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -80,14 +72,7 @@ export default buildConfig({
     Categories,
     Users,
     Tenants,
-    Menu,
-    FoodCategory,
-    MenuItem,
-    Promotions,
-    Reviews,
-    OpeningHours,
-    Events,
-    EventTickets,
+   
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
