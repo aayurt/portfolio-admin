@@ -6,14 +6,11 @@ module.exports = {
       instances: 'max',
       exec_mode: 'cluster',
 
-      // 🟢 SAFETY 1: Restart process if it exceeds a limit (e.g., 1GB)
-      // This is a "hard reset" to clear memory leaks.
-      max_memory_restart: '1G',
+      // Restart if memory exceeds ~350MB
+      max_memory_restart: '350M',
 
-      // 🟢 SAFETY 2: Tell Node/V8 to be aggressive with garbage collection
-      // --max-old-space-size: Sets the limit where Node starts GC heavily.
-      // --gc-interval: Frequency of the garbage collector.
-      node_args: '--max-old-space-size=1024',
+      // Limit Node heap to 350MB
+      node_args: '--max-old-space-size=350',
 
       env: {
         NODE_ENV: 'production',
@@ -21,4 +18,4 @@ module.exports = {
       },
     },
   ],
-}
+};
