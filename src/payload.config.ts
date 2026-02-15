@@ -19,6 +19,7 @@ import { Header } from './Header/config';
 import { Media } from './collections/Media';
 import { plugins } from './plugins';
 import { getServerSideURL } from './utilities/getURL';
+import { Galleries } from './collections/Galleries';
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -75,7 +76,8 @@ export default buildConfig({
     Users,
     Tenants,
     Projects,
-    Abouts
+    Abouts,
+    Galleries
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

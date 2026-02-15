@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
 import { isSuperAdminAccess } from '@/access/isSuperAdmin'
-import { updateAndDeleteAccess } from './access/updateAndDelete'
 import { sendFCMTopicNotification } from '@/utilities/sendFCMNotification'
+import { updateAndDeleteAccess } from './access/updateAndDelete'
 
 export const Tenants: CollectionConfig = {
   slug: 'tenants',
@@ -190,5 +190,51 @@ export const Tenants: CollectionConfig = {
       type: 'text',
       // required: true,
     },
+
+    {
+      name: 'intro',
+      type: 'group',
+      fields: [
+        {
+          name: 'intro',
+          type: 'text',
+          // required: true,
+        },
+        {
+          name: 'introDescription',
+          type: 'text',
+          // required: true,
+        },
+      ],
+    },
   ],
+  endpoints: [
+    {
+      path: '/by-slug/:slug',
+      method: 'get',
+
+      handler: async (req) => {
+        const slug = req.routeParams?.slug as string
+
+        const tenant = await req.payload.find({
+          collection: 'tenants',
+          where: {
+            slug: {
+              equals: slug,
+            },
+          },
+          limit: 1,
+        })
+        if (!tenant.docs.length) {
+          return Response.json(
+            { message: 'Tenant not found' },
+            { status: 404 }
+          )
+        }
+        return Response.json(tenant.docs[0], { status: 200 })
+      },
+    },
+  ]
+
+
 }

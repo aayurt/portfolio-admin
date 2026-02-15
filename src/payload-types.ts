@@ -75,6 +75,7 @@ export interface Config {
     tenants: Tenant;
     projects: Project;
     abouts: About;
+    galleries: Gallery;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -94,6 +95,7 @@ export interface Config {
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     abouts: AboutsSelect<false> | AboutsSelect<true>;
+    galleries: GalleriesSelect<false> | GalleriesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -282,6 +284,10 @@ export interface Tenant {
   };
   logo?: (number | null) | Media;
   description?: string | null;
+  intro?: {
+    intro?: string | null;
+    introDescription?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -418,6 +424,12 @@ export interface Post {
     | {
         id?: string | null;
         name?: string | null;
+      }[]
+    | null;
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
       }[]
     | null;
   slug?: string | null;
@@ -899,6 +911,23 @@ export interface About {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "galleries".
+ */
+export interface Gallery {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title?: string | null;
+  images?:
+    | {
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1101,6 +1130,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'abouts';
         value: number | About;
+      } | null)
+    | ({
+        relationTo: 'galleries';
+        value: number | Gallery;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1326,6 +1359,12 @@ export interface PostsSelect<T extends boolean = true> {
         id?: T;
         name?: T;
       };
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
   slug?: T;
   slugLock?: T;
   updatedAt?: T;
@@ -1515,6 +1554,12 @@ export interface TenantsSelect<T extends boolean = true> {
       };
   logo?: T;
   description?: T;
+  intro?:
+    | T
+    | {
+        intro?: T;
+        introDescription?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1563,6 +1608,22 @@ export interface AboutsSelect<T extends boolean = true> {
         institution?: T;
         degree?: T;
         period?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "galleries_select".
+ */
+export interface GalleriesSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  images?:
+    | T
+    | {
+        image?: T;
         id?: T;
       };
   updatedAt?: T;

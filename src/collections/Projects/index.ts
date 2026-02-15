@@ -1,10 +1,17 @@
 import type { CollectionConfig } from 'payload'
+import { updateAndDeleteAccess } from '../Tenants/access/updateAndDelete'
 
 export const Projects: CollectionConfig = {
   slug: 'projects',
   admin: {
     useAsTitle: 'title',
     group: "Tenants"
+  },
+  access: {
+    create: () => true,
+    delete: updateAndDeleteAccess,
+    read: () => true,
+    update: updateAndDeleteAccess,
   },
   fields: [
     {

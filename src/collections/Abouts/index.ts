@@ -1,9 +1,16 @@
 import type { CollectionConfig } from 'payload'
+import { updateAndDeleteAccess } from '../Tenants/access/updateAndDelete'
 
 export const Abouts: CollectionConfig = {
   slug: 'abouts',
   admin: {
     group: "Tenants"
+  },
+  access: {
+    create: () => true,
+    delete: updateAndDeleteAccess,
+    read: () => true,
+    update: updateAndDeleteAccess,
   },
   fields: [
     {

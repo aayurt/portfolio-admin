@@ -51,7 +51,7 @@ export const Posts: CollectionConfig<'posts'> = {
   },
   admin: {
     defaultColumns: ['title', 'slug', 'updatedAt'],
-    hidden: true,
+    hidden: false,
     livePreview: {
       url: ({ data, req }) => {
         const path = generatePreviewPath({
@@ -220,7 +220,16 @@ export const Posts: CollectionConfig<'posts'> = {
         },
       ],
     },
-
+    {
+      name: 'tags',
+      type: 'array',
+      fields: [
+        {
+          name: 'tag',
+          type: 'text',
+        },
+      ],
+    },
     ...slugField(),
   ],
   hooks: {
@@ -231,11 +240,49 @@ export const Posts: CollectionConfig<'posts'> = {
   },
   versions: {
     drafts: {
-      autosave: {
-        interval: 100, // We set this interval for optimal live preview
-      },
+      autosave: false,
       schedulePublish: true,
     },
     maxPerDoc: 50,
   },
+  endpoints: [
+    {
+      path: '/by-slug/:slug',
+      method: 'get',
+
+      handler: async (req) => {
+        const slug = req.routeParams?.slug as string
+        const getTenant = await req.payload.find({
+          collection: 'tenants',
+          where: {
+            slug: {
+              equals: slug,
+            },
+          },
+          limit: 1,
+        })
+        if (getTenant.docs.length === 0) {
+          return Response.json(
+            { message: 'Tenant not found' },
+            { status: 404 }
+          )
+        }
+        const posts = await req.payload.find({
+          collection: 'posts',
+          where: {
+            tenant: {
+              equals: getTenant.docs[0]?.id,
+            },
+          },
+        })
+        if (!posts.docs.length) {
+          return Response.json(
+            { message: 'Post not found' },
+            { status: 404 }
+          )
+        }
+        return Response.json(posts.docs, { status: 200 })
+      },
+    },
+  ]
 }
