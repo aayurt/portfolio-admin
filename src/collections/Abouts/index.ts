@@ -1,5 +1,5 @@
+import { superAdminOrTenantAdminAccess } from '@/access/superAdminOrTenantAdmin'
 import type { CollectionConfig } from 'payload'
-import { updateAndDeleteAccess } from '../Tenants/access/updateAndDelete'
 
 export const Abouts: CollectionConfig = {
   slug: 'abouts',
@@ -8,9 +8,9 @@ export const Abouts: CollectionConfig = {
   },
   access: {
     create: () => true,
-    delete: updateAndDeleteAccess,
+    delete: superAdminOrTenantAdminAccess,
     read: () => true,
-    update: updateAndDeleteAccess,
+    update: superAdminOrTenantAdminAccess,
   },
   fields: [
     {
@@ -68,4 +68,42 @@ export const Abouts: CollectionConfig = {
       ],
     },
   ],
+  endpoints: [
+    {
+      path: '/by-slug/:slug',
+      method: 'get',
+
+      handler: async (req) => {
+        const slug = req.routeParams?.slug as string
+
+        const getTenant = await req.payload.find({
+          collection: 'tenants',
+          where: {
+            slug: {
+              equals: slug,
+            },
+          },
+          limit: 1,
+        })
+        if (getTenant.docs.length === 0) {
+          return Response.json(
+            { message: 'Tenant not found' },
+            { status: 404 }
+          )
+        }
+        const abouts = await req.payload.find({
+          collection: 'abouts',
+          where: {
+            tenant: {
+              equals: getTenant.docs[0]?.id,
+            },
+          },
+        })
+        if (!abouts.docs.length) {
+          return Response.json([], { status: 200 })
+        }
+        return Response.json(abouts.docs, { status: 200 })
+      },
+    },
+  ]
 }
