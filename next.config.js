@@ -12,7 +12,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   basePath: '/admin',
-  assetPrefix: '/admin',
   output: 'standalone',
   images: {
     remotePatterns: [
