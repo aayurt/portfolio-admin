@@ -274,12 +274,6 @@ export const Posts: CollectionConfig<'posts'> = {
             },
           },
         })
-        if (!posts.docs.length) {
-          return Response.json(
-            { message: 'Post not found' },
-            { status: 404 }
-          )
-        }
         return Response.json(posts.docs, { status: 200 })
       },
     },
