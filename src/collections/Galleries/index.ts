@@ -55,6 +55,7 @@ export const Galleries: CollectionConfig = {
         }
         const galleries = await req.payload.find({
           collection: 'galleries',
+          depth: 0,
           where: {
             tenant: {
               equals: getTenant.docs[0]?.id,

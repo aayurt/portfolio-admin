@@ -80,6 +80,7 @@ export const Projects: CollectionConfig = {
         }
         const projects = await req.payload.find({
           collection: 'projects',
+          depth: 0,
           where: {
             tenant: {
               equals: getTenant.docs[0]?.id,
@@ -87,6 +88,35 @@ export const Projects: CollectionConfig = {
           },
         })
         return Response.json(projects.docs, { status: 200 })
+      },
+    },
+    {
+      path: '/by-slug/:tenant/:slug',
+      method: 'get',
+      handler: async (req) => {
+        const tenantSlug = req.routeParams?.tenant as string
+        const docSlug = req.routeParams?.slug as string
+        const getTenant = await req.payload.find({
+          collection: 'tenants',
+          where: { slug: { equals: tenantSlug } },
+          limit: 1,
+        })
+        if (getTenant.docs.length === 0) {
+          return Response.json({ message: 'Tenant not found' }, { status: 404 })
+        }
+        const project = await req.payload.find({
+          collection: 'projects',
+          depth: 0,
+          where: {
+            tenant: { equals: getTenant.docs[0]?.id },
+            slug: { equals: docSlug },
+          },
+          limit: 1,
+        })
+        if (!project.docs.length) {
+          return Response.json({ message: 'Project not found' }, { status: 404 })
+        }
+        return Response.json(project.docs[0], { status: 200 })
       },
     },
   ]
