@@ -1,5 +1,6 @@
 build
-dist / media
+dist
+/media
 node_modules
 .DS_Store
 .env
@@ -13,4 +14,5 @@ public/robots.txt
 public/sitemap*.xml
 serviceAccountKey.json
 next.zip
-.env.productiontsconfig.tsbuildinfo
+.env.production
+tsconfig.tsbuildinfo

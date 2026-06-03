@@ -294,7 +294,7 @@ export const Posts: CollectionConfig<'posts'> = {
         }
         const post = await req.payload.find({
           collection: 'posts',
-          depth: 0,
+          depth: 1,
           where: {
             tenant: { equals: getTenant.docs[0]?.id },
             slug: { equals: docSlug },

@@ -1,5 +1,11 @@
 import { superAdminOrTenantAdminAccess } from '@/access/superAdminOrTenantAdmin'
 import type { CollectionConfig } from 'payload'
+import {
+  FixedToolbarFeature,
+  HeadingFeature,
+  InlineToolbarFeature,
+  lexicalEditor,
+} from '@payloadcms/richtext-lexical'
 
 export const Abouts: CollectionConfig = {
   slug: 'abouts',
@@ -16,6 +22,16 @@ export const Abouts: CollectionConfig = {
     {
       name: 'intro',
       type: 'richText',
+      editor: lexicalEditor({
+        features: ({ rootFeatures }) => {
+          return [
+            ...rootFeatures,
+            HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3'] }),
+            FixedToolbarFeature(),
+            InlineToolbarFeature(),
+          ]
+        },
+      }),
     },
     {
       name: 'skills',
