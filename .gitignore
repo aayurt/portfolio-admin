@@ -14,3 +14,6 @@ public/sitemap*.xml
 serviceAccountKey.json
 next.zip
 .env.production
+
+# Freebuff local data
+.freebuff
