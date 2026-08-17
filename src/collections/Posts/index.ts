@@ -268,7 +268,9 @@ export const Posts: CollectionConfig<'posts'> = {
         }
         const posts = await req.payload.find({
           collection: 'posts',
-          depth: 2,
+          // depth 1 populates heroImage + block media for the frontend cards,
+          // while avoiding the deep recursion (tenant -> avatar -> ...) that made depth 2 slow
+          depth: 1,
           where: {
             tenant: {
               equals: getTenant.docs[0]?.id,
@@ -276,6 +278,35 @@ export const Posts: CollectionConfig<'posts'> = {
           },
         })
         return Response.json(posts.docs, { status: 200 })
+      },
+    },
+    {
+      path: '/by-slug/:tenant/:slug',
+      method: 'get',
+      handler: async (req) => {
+        const tenantSlug = req.routeParams?.tenant as string
+        const docSlug = req.routeParams?.slug as string
+        const getTenant = await req.payload.find({
+          collection: 'tenants',
+          where: { slug: { equals: tenantSlug } },
+          limit: 1,
+        })
+        if (getTenant.docs.length === 0) {
+          return Response.json({ message: 'Tenant not found' }, { status: 404 })
+        }
+        const post = await req.payload.find({
+          collection: 'posts',
+          depth: 1,
+          where: {
+            tenant: { equals: getTenant.docs[0]?.id },
+            slug: { equals: docSlug },
+          },
+          limit: 1,
+        })
+        if (!post.docs.length) {
+          return Response.json({ message: 'Post not found' }, { status: 404 })
+        }
+        return Response.json(post.docs[0], { status: 200 })
       },
     },
   ]

@@ -1,5 +1,6 @@
 build
-dist / media
+dist
+/media
 node_modules
 .DS_Store
 .env
@@ -17,3 +18,5 @@ next.zip
 
 # Freebuff local data
 .freebuff
+
+tsconfig.tsbuildinfo
