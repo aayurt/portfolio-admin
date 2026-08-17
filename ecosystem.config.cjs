@@ -13,16 +13,14 @@ module.exports = {
 
       // 🟢 SAFETY 2: Tell Node/V8 to be aggressive with garbage collection
       // --max-old-space-size: Sets the limit where Node starts GC heavily.
-      // --gc-interval: Frequency of the garbage collector.
-      node_args: '--max-old-space-size=300',
+      // --env-file: load DATABASE_URI, PAYLOAD_SECRET, PREVIEW_SECRET and
+      // CRON_SECRET from /var/www/portfolio-admin/.env (kept off the server,
+      // never committed to git).
+      node_args: '--max-old-space-size=300 --env-file=.env',
 
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
-        DATABASE_URI: 'postgresql://neondb_owner:npg_lgnmCyZ38dva@ep-super-firefly-a1rjgu37-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
-        PAYLOAD_SECRET: '4ca13d993b1e2d789734dada',
-        PREVIEW_SECRET: 'YOUR_SECRET_HERE',
-        CRON_SECRET: 'YOUR_CRON_SECRET_HERE',
       },
     },
   ],
