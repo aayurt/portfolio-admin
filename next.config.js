@@ -1,6 +1,13 @@
 import { withPayload } from '@payloadcms/next/withPayload'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 import redirects from './redirects.js'
+
+// Pin the file-tracing root to THIS project. Without it, Next may infer a
+// workspace root from a parent pnpm-lock.yaml and produce a broken
+// standalone build (missing server.js / node_modules).
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -13,6 +20,7 @@ const nextConfig = {
   },
   basePath: '/admin',
   output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname),
   images: {
     remotePatterns: [
       ...[
