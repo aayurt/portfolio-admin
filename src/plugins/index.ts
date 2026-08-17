@@ -130,6 +130,7 @@ export const plugins: Plugin[] = [
       projects: {},
       abouts: {},
       galleries: {},
+      solutions: {},
     },
     tenantField: {
       access: {

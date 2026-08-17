@@ -218,6 +218,7 @@ export const Tenants: CollectionConfig = {
 
         const tenant = await req.payload.find({
           collection: 'tenants',
+          depth: 2,
           where: {
             slug: {
               equals: slug,

@@ -93,6 +93,7 @@ export const Abouts: CollectionConfig = {
         }
         const abouts = await req.payload.find({
           collection: 'abouts',
+          depth: 2,
           where: {
             tenant: {
               equals: getTenant.docs[0]?.id,

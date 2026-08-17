@@ -1,15 +1,18 @@
 import type { CollectionConfig } from 'payload'
-import { updateAndDeleteAccess } from '../Tenants/access/updateAndDelete'
-import { superAdminOrTenantAdminAccess } from '@/access/superAdminOrTenantAdmin'
 
-export const Projects: CollectionConfig = {
-  slug: 'projects',
+import { superAdminOrTenantAdminAccess } from '@/access/superAdminOrTenantAdmin'
+import { slugField } from '@/fields/slug'
+
+export const Solutions: CollectionConfig = {
+  slug: 'solutions',
   admin: {
     useAsTitle: 'title',
-    group: "Tenants"
+    group: 'Tenants',
+    defaultColumns: ['title', 'subtitle', 'updatedAt'],
+    description: 'Solution offerings shown in the Solutions carousel. Add as many as you like.',
   },
   access: {
-    create: () => true,
+    create: superAdminOrTenantAdminAccess,
     delete: superAdminOrTenantAdminAccess,
     read: () => true,
     update: superAdminOrTenantAdminAccess,
@@ -21,33 +24,25 @@ export const Projects: CollectionConfig = {
       required: true,
     },
     {
-      name: 'slug',
+      name: 'subtitle',
       type: 'text',
-      index: true,
       admin: {
-        position: 'sidebar',
+        description: 'Category tag shown on the card, e.g. "AI/ML Automation"',
+      },
+    },
+    {
+      name: 'shortDescription',
+      type: 'textarea',
+      admin: {
+        description: 'One-sentence summary shown on the card.',
       },
     },
     {
       name: 'description',
       type: 'textarea',
-    },
-    {
-      name: 'content',
-      type: 'richText',
-    },
-    {
-      name: 'client',
-      type: 'text',
-      label: 'Client/Company',
-    },
-    {
-      name: 'role',
-      type: 'text',
-    },
-    {
-      name: 'timeframe',
-      type: 'text',
+      admin: {
+        description: 'Longer description shown on the card.',
+      },
     },
     {
       name: 'metrics',
@@ -128,12 +123,7 @@ export const Projects: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'images',
-      type: 'relationship',
-      relationTo: 'media',
-      hasMany: true,
-    },
+    ...slugField(),
   ],
   endpoints: [
     {
@@ -152,13 +142,10 @@ export const Projects: CollectionConfig = {
           limit: 1,
         })
         if (getTenant.docs.length === 0) {
-          return Response.json(
-            { message: 'Tenant not found' },
-            { status: 404 }
-          )
+          return Response.json({ message: 'Tenant not found' }, { status: 404 })
         }
-        const projects = await req.payload.find({
-          collection: 'projects',
+        const solutions = await req.payload.find({
+          collection: 'solutions',
           depth: 2,
           where: {
             tenant: {
@@ -166,8 +153,8 @@ export const Projects: CollectionConfig = {
             },
           },
         })
-        return Response.json(projects.docs, { status: 200 })
+        return Response.json(solutions.docs, { status: 200 })
       },
     },
-  ]
+  ],
 }
