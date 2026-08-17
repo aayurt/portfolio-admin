@@ -2,6 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'multi-tenant-portfolio',
+      cwd: '/var/www/portfolio-admin',
       script: '/var/www/portfolio-admin/.next/standalone/server.js',
       instances: 'max',
       exec_mode: 'cluster',

@@ -6,14 +6,10 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
 import { superAdminOrTenantAdminAccess } from '@/access/superAdminOrTenantAdmin'
 import { setCookieBasedOnDomain } from './Users/hooks/setCookieBasedOnDomain'
-
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -40,8 +36,10 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
-    staticDir: path.resolve(dirname, '../../public/media'),
+    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload.
+    // NOTE: derive from process.cwd() at runtime, NOT from import.meta.url — in standalone builds Next inlines
+    // the build machine's absolute path into fileURLToPath(import.meta.url), which 500s the media routes on the server.
+    staticDir: path.resolve(process.cwd(), 'public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
     imageSizes: [

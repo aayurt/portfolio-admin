@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ── Configuration ──────────────────────────────────────────────────────────
-HOST="PersonalVPS"                          # ssh alias (see ~/.ssh/config)
+HOST=""                                     # ssh alias; chosen below or passed as arg
 REMOTE_DIR="/var/www/portfolio-admin"       # deploy root on the server
 LOCAL_DIR="$(dirname "$0")/.."
 # Extra native packages to bootstrap for linux-x64, space separated, e.g.
@@ -11,7 +11,32 @@ NATIVE_DEPS="${NATIVE_DEPS:-}"
 # ───────────────────────────────────────────────────────────────────────────
 
 LOCAL_ONLY=0
-[ "${1:-}" = "--local-only" ] && LOCAL_ONLY=1
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --local-only) LOCAL_ONLY=1 ;;
+    --host) HOST="${2:-}"; shift ;;
+    -h|--help) echo "Usage: $0 [--local-only] [--host <alias>]"; exit 0 ;;
+    *) HOST="$1" ;;
+  esac
+  shift
+done
+
+# Interactive host selection when none was passed.
+if [ "$LOCAL_ONLY" = "0" ] && [ -z "$HOST" ]; then
+  echo "Choose a deploy target:"
+  echo "  1) PersonalVPS"
+  echo "  2) my-vps"
+  printf "  [1/2, default 1]: "
+  read -r choice
+  case "$choice" in
+    2|my-vps) HOST="my-vps" ;;
+    *) HOST="PersonalVPS" ;;
+  esac
+fi
+
+if [ "$LOCAL_ONLY" = "0" ]; then
+  echo "Deploy target: $HOST"
+fi
 
 cd "$LOCAL_DIR"
 
