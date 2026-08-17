@@ -37,9 +37,11 @@ export const Media: CollectionConfig = {
   ],
   upload: {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload.
-    // NOTE: derive from process.cwd() at runtime, NOT from import.meta.url — in standalone builds Next inlines
-    // the build machine's absolute path into fileURLToPath(import.meta.url), which 500s the media routes on the server.
-    staticDir: path.resolve(process.cwd(), 'public/media'),
+    // NOTE: never derive from import.meta.url — in standalone builds Next inlines the build machine's absolute
+    // path into fileURLToPath(import.meta.url), which 500s media routes on the server. process.cwd() is a safe
+    // fallback in dev, but standalone server.js also chdir()s into .next/standalone, so production should set
+    // MEDIA_STATIC_DIR explicitly (the deploy script writes it into the server .env).
+    staticDir: process.env.MEDIA_STATIC_DIR || path.resolve(process.cwd(), 'public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
     imageSizes: [

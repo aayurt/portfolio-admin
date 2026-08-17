@@ -141,13 +141,19 @@ rsync -avz --delete --progress \
   "$HOST:$REMOTE_DIR/.next/standalone/"
 
 echo ""
-echo "=== 5/6 Copying ecosystem.config.cjs to remote root ==="
+echo "=== 5/6 Ensuring server .env + copying ecosystem.config.cjs ==="
+# Standalone server.js chdirs into .next/standalone, so the uploads dir must
+# be pinned explicitly. Add MEDIA_STATIC_DIR to the server .env if missing.
+ssh "$HOST" "cd $REMOTE_DIR && grep -q '^MEDIA_STATIC_DIR=' .env 2>/dev/null || \
+  echo 'MEDIA_STATIC_DIR=$REMOTE_DIR/public/media' >> .env"
 rsync -avz ecosystem.config.cjs "$HOST:$REMOTE_DIR/ecosystem.config.cjs"
 
 echo ""
 echo "=== 6/6 Restarting PM2 ==="
+# delete + start (not startOrRestart): PM2 only applies the config's cwd on a
+# fresh start, and restart kept the stale /var/www cwd which broke --env-file.
 ssh "$HOST" "source ~/.nvm/nvm.sh && cd $REMOTE_DIR && \
-  pm2 startOrRestart ecosystem.config.cjs --update-env && pm2 save"
+  pm2 delete multi-tenant-portfolio 2>/dev/null; pm2 start ecosystem.config.cjs && pm2 save"
 
 echo ""
 echo "Done. Deployed standalone build to $HOST:$REMOTE_DIR"
