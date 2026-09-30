@@ -3,8 +3,13 @@ module.exports = {
     {
       name: 'multi-tenant-portfolio',
       script: '/var/www/portfolio-admin/.next/standalone/server.js',
-      instances: 'max',
-      exec_mode: 'cluster',
+      // Node 24 REQUIRED: the bundle uses the global File API (missing on the
+      // VPS default Node 18 → "ReferenceError: File is not defined"). pm2
+      // ignores `interpreter` in cluster mode, so fork is mandatory too —
+      // no scaling loss on a single-CPU box.
+      interpreter: '/root/.nvm/versions/node/v24.13.1/bin/node',
+      instances: 1,
+      exec_mode: 'fork',
 
       // 🟢 SAFETY 1: Restart process if it exceeds a limit (e.g., 1GB)
       // This is a "hard reset" to clear memory leaks.

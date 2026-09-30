@@ -1,54 +1,75 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-HOST="PersonalVPS"
+# Builds the Payload admin locally, then deploys the standalone bundle to the
+# selected server and reloads pm2.
+#
+# Usage:
+#   sh scripts/deploy-standalone.sh [server]     # e.g. sh scripts/deploy-standalone.sh PersonalVPS
+#
+# The server is an ssh alias. Defaults to PersonalVPS (interactive picker when
+# stdin is a terminal and no arg was given).
+
 REMOTE_DIR="/var/www/portfolio-admin"
+PM2_APP="multi-tenant-portfolio"
+REMOTE_PORT="3001"
+# Node 24 is REQUIRED on the server (global File API, --env-file). Must match
+# the `interpreter` pinned in ecosystem.config.cjs.
+NODE24="/root/.nvm/versions/node/v24.13.1/bin"
 LOCAL_DIR="$(dirname "$0")/.."
 
-echo "=== Step 1: Building Next.js standalone ==="
+HOST="${1:-}"
+if [ -z "$HOST" ] && [ -t 0 ]; then
+  echo "Choose a deploy target:"
+  echo "  1) PersonalVPS"
+  printf "  [1, default 1]: "
+  read -r choice
+  HOST="PersonalVPS"
+fi
+HOST="${HOST:-PersonalVPS}"
+echo "Deploy target: $HOST"
+
 cd "$LOCAL_DIR"
-NODE_OPTIONS=--no-deprecation npx next build
+
+echo "=== 1/7 Building Next.js standalone (uses local .env) ==="
+pnpm install --frozen-lockfile
+pnpm run build
+
+STANDALONE=".next/standalone"
 
 echo ""
-echo "=== Step 2: Preparing standalone folder ==="
-cp -r public .next/standalone/
-cp -r .next/static .next/standalone/.next/
-cp ecosystem.config.cjs .next/standalone/
-cp package.json .next/standalone/
+echo "=== 2/7 Preparing standalone folder ==="
+[ -d public ] && cp -r public "$STANDALONE/"
+[ -d .next/static ] && cp -r .next/static "$STANDALONE/.next/"
 
 echo ""
-echo "=== Step 3: Syncing to VPS ==="
-rsync -avz --delete --progress \
-  .next/standalone/ \
+echo "=== 3/7 Syncing to server ==="
+rsync -avz \
+  --exclude='node_modules' \
+  --exclude='.git' \
+  --exclude='.next/cache' \
+  --exclude='.env' \
+  -e ssh \
+  "$STANDALONE/" \
   "$HOST:$REMOTE_DIR/.next/standalone/"
 
 echo ""
-echo "=== Step 4: Rebuilding native modules (sharp) on VPS ==="
-ssh "$HOST" "source ~/.nvm/nvm.sh && \
-  SHARP_DIR=$REMOTE_DIR/.next/standalone/node_modules/.pnpm/sharp@0.32.6/node_modules/sharp && \
-  if [ ! -f \"\$SHARP_DIR/build/Release/sharp-linux-x64.node\" ]; then \
-    echo 'Sharp linux binary missing. Downloading and rebuilding...' && \
-    apt-get install -y libvips-dev >/dev/null 2>&1 && \
-    TMPDIR=\$(mktemp -d) && \
-    cd \$TMPDIR && \
-    npm pack sharp@0.32.6 >/dev/null 2>&1 && \
-    tar -xzf sharp-0.32.6.tgz >/dev/null 2>&1 && \
-    cd package && \
-    npm install --ignore-scripts=false >/dev/null 2>&1 && \
-    cp build/Release/sharp-linux-x64.node \$SHARP_DIR/build/Release/ && \
-    rm -rf \$TMPDIR && \
-    echo 'Sharp rebuilt successfully'; \
-  else \
-    echo 'Sharp linux binary already exists'; \
-  fi"
+echo "=== 4/7 Rebuilding sharp for Node 24 on server ==="
+# sharp's native binding is ABI-tied: a binary built for Node 18 segfaults
+# silently seconds after boot under Node 24. Always rebuild on the target.
+ssh "$HOST" "export PATH=$NODE24:\$PATH && cd $REMOTE_DIR && (npm rebuild sharp || pnpm rebuild sharp)"
 
 echo ""
-echo "=== Step 5: Copying ecosystem.config.cjs to remote root ==="
+echo "=== 5/7 Syncing ecosystem.config.cjs ==="
 rsync -avz ecosystem.config.cjs "$HOST:$REMOTE_DIR/ecosystem.config.cjs"
 
 echo ""
-echo "=== Step 6: Restarting PM2 ==="
-ssh "$HOST" "source ~/.nvm/nvm.sh && pm2 start $REMOTE_DIR/ecosystem.config.cjs --update-env && pm2 save"
+echo "=== 6/7 Reloading PM2 ==="
+ssh "$HOST" "cd $REMOTE_DIR && (pm2 reload ecosystem.config.cjs --only $PM2_APP --update-env || pm2 start ecosystem.config.cjs --only $PM2_APP) && pm2 save"
 
 echo ""
-echo "Done. Deployed standalone build to $HOST:$REMOTE_DIR"
+echo "=== 7/7 Verifying ==="
+ssh "$HOST" "sleep 8; curl -s -o /dev/null -w 'admin api:%{http_code}\n' --max-time 25 'http://localhost:$REMOTE_PORT/admin/api/tenants?limit=1'"
+
+echo ""
+echo "Done. Deployed admin standalone build to $HOST:$REMOTE_DIR"
