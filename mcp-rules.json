@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "type": "forbidden",
+      "id": "no-build-output",
+      "match": [".next/**", "node_modules/**", "build/**"],
+      "reason": "Build output and dependencies are not part of the reviewed repository.",
+      "severity": "error"
+    },
+    {
+      "type": "forbidden",
+      "id": "no-secrets",
+      "match": [".env", ".env.local", ".env.production", "serviceAccountKey.json"],
+      "reason": "Secrets and service-account keys must never be touched by agents. Use .env.example for reference.",
+      "severity": "error"
+    },
+    {
+      "type": "requireAdr",
+      "id": "multitenant-governed",
+      "match": ["src/collections/**", "src/plugins/**", "src/access/**"],
+      "adr": "0001",
+      "reason": "Multi-tenant data model is governed by ADR-0001.",
+      "severity": "error"
+    },
+    {
+      "type": "requireAdr",
+      "id": "payload-upgrade-governed",
+      "match": ["src/migrations/**", "src/payload.config.ts"],
+      "adr": "0002",
+      "reason": "Payload config and migrations are governed by ADR-0002.",
+      "severity": "error"
+    },
+    {
+      "type": "requireTest",
+      "id": "src-needs-tests",
+      "match": ["src/utilities/**/*.ts", "src/access/**/*.ts", "src/endpoints/**/*.ts"],
+      "testMatch": ["**/*.test.ts", "test/**"],
+      "testExempt": ["**/*.d.ts"],
+      "reason": "Server logic in utilities/access/endpoints must ship tests (docs/TESTING.md).",
+      "severity": "warning"
+    },
+    {
+      "type": "requireDocUpdate",
+      "id": "arch-docs-stale",
+      "match": ["src/collections/**", "src/plugins/**", "src/payload.config.ts"],
+      "docs": ["docs/ARCHITECTURE.md"],
+      "reason": "Data-model or config changes should keep docs/ARCHITECTURE.md current.",
+      "severity": "warning"
+    },
+    {
+      "type": "layerDependency",
+      "id": "layered-admin",
+      "direction": "inward-only",
+      "layers": [
+        { "name": "app", "globs": ["src/app/**", "src/collections/**", "src/endpoints/**", "src/plugins/**", "src/payload.config.ts", "src/migrations/**"] },
+        { "name": "engine", "globs": ["src/fields/**", "src/hooks/**", "src/blocks/**", "src/heros/**", "src/components/**", "src/Footer/**", "src/Header/**"] },
+        { "name": "foundation", "globs": ["src/access/**", "src/utilities/**", "src/search/**"] }
+      ],
+      "reason": "App/collections/config compose engine (fields/hooks/blocks); engine uses foundation (access/utilities). Foundation never imports above it.",
+      "severity": "error"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "kritikka": {
+      "command": "npx",
+      "args": ["-y", "kritikka-mcp", "--root", "${workspaceFolder}"]
+    }
+  }
+}

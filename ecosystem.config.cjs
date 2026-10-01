@@ -2,7 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'multi-tenant-portfolio',
-      script: '/var/www/portfolio-admin/.next/standalone/server.js',
+      cwd: '/var/www/portfolio-admin',
+      script: '.next/standalone/server.js',
       // Node 24 REQUIRED: the bundle uses the global File API (missing on the
       // VPS default Node 18 → "ReferenceError: File is not defined"). pm2
       // ignores `interpreter` in cluster mode, so fork is mandatory too —
@@ -18,15 +19,14 @@ module.exports = {
       // 🟢 SAFETY 2: Tell Node/V8 to be aggressive with garbage collection
       // --max-old-space-size: Sets the limit where Node starts GC heavily.
       // --gc-interval: Frequency of the garbage collector.
-      node_args: '--max-old-space-size=300',
+      // --env-file: load runtime secrets (DATABASE_URI, PAYLOAD_SECRET, …)
+      // from /var/www/portfolio-admin/.env — never committed, never synced
+      // by deploys (see DEPLOY.md). No secrets in this file.
+      node_args: '--max-old-space-size=300 --env-file=.env',
 
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
-        DATABASE_URI: 'postgresql://neondb_owner:npg_lgnmCyZ38dva@ep-super-firefly-a1rjgu37-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
-        PAYLOAD_SECRET: '4ca13d993b1e2d789734dada',
-        PREVIEW_SECRET: 'YOUR_SECRET_HERE',
-        CRON_SECRET: 'YOUR_CRON_SECRET_HERE',
       },
     },
   ],

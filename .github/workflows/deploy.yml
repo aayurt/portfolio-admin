@@ -1,0 +1,120 @@
+# Deploy portfolio-admin (Payload) to PersonalVPS.
+#
+# Build runs on the GitHub runner (ubuntu, linux-x64), then rsyncs the
+# standalone bundle to the VPS. sharp is rebuilt ON THE SERVER under
+# Node 24 (ABI-tied native binding — a runner-built binary segfaults
+# silently seconds after boot under a different Node).
+#
+# Required GitHub secrets (repo Settings → Secrets → Actions):
+#   VPS_HOST, VPS_USER, VPS_SSH_PRIVATE_KEY
+#   DATABASE_URI, PAYLOAD_SECRET, NEXT_PUBLIC_SERVER_URL,
+#   NEXT_PUBLIC_SLUG, CRON_SECRET, PREVIEW_SECRET
+#   (plus Firebase / Better Auth / Google OAuth secrets listed below —
+#   empty is allowed when the feature is unused)
+#
+# The server .env is NEVER overwritten (see DEPLOY.md). Build-time env
+# comes from secrets on the runner only.
+#
+# Trigger: push to main or manual dispatch.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-admin
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URI: ${{ secrets.DATABASE_URI }}
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      NEXT_PUBLIC_SERVER_URL: ${{ secrets.NEXT_PUBLIC_SERVER_URL }}
+      NEXT_PUBLIC_SLUG: ${{ secrets.NEXT_PUBLIC_SLUG }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      PREVIEW_SECRET: ${{ secrets.PREVIEW_SECRET }}
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+      NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
+      NEXT_PUBLIC_FIREBASE_VAPID_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_VAPID_KEY }}
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+      BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.3.0
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Generate types
+        run: pnpm generate:types
+
+      - name: Build (standalone)
+        run: pnpm build
+
+      - name: Assemble standalone bundle
+        run: |
+          set -euo pipefail
+          STANDALONE=".next/standalone"
+          [ -d public ] && cp -r public "$STANDALONE/"
+          [ -d .next/static ] && cp -r .next/static "$STANDALONE/.next/"
+
+      - name: Setup SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+          printf 'Host vps-deploy\n\tHostName %s\n\tUser %s\n\tIdentityFile ~/.ssh/deploy_key\n\tStrictHostKeyChecking yes\n' \
+            "${{ secrets.VPS_HOST }}" "${{ secrets.VPS_USER }}" > ~/.ssh/config
+
+      - name: Rsync bundle to VPS (server .env untouched)
+        run: |
+          set -euo pipefail
+          rsync -avz \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='.next/cache' \
+            --exclude='.env' \
+            .next/standalone/ \
+            vps-deploy:/var/www/portfolio-admin/.next/standalone/
+
+      - name: Rebuild sharp on server (Node 24 ABI)
+        run: |
+          ssh vps-deploy "export PATH=/root/.nvm/versions/node/v24.13.1/bin:\$PATH && cd /var/www/portfolio-admin && (npm rebuild sharp || pnpm rebuild sharp)"
+
+      - name: Sync ecosystem + reload pm2
+        run: |
+          rsync -avz ecosystem.config.cjs vps-deploy:/var/www/portfolio-admin/ecosystem.config.cjs
+          ssh vps-deploy "cd /var/www/portfolio-admin && (pm2 reload ecosystem.config.cjs --only multi-tenant-portfolio --update-env || pm2 start ecosystem.config.cjs --only multi-tenant-portfolio) && pm2 save"
+
+      - name: Verify
+        run: |
+          ssh vps-deploy "sleep 8; curl -s -o /dev/null -w 'admin api:%{http_code}\n' --max-time 25 'http://localhost:3001/admin/api/tenants?limit=1'"

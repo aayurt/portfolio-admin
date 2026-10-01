@@ -14,12 +14,22 @@ SSH entry: `ssh PersonalVPS`.
 
 ## Deploy
 
-Build locally, ship the standalone bundle to the selected server:
+GitHub Actions (`.github/workflows/deploy.yml`) is the primary path:
+push to `main` builds on the runner (linux-x64), rsyncs
+`.next/standalone/` to the VPS (server `.env` untouched), rebuilds
+sharp **on the server under Node 24**, reloads pm2, and health-checks
+`/admin/api/tenants?limit=1`. Manual trigger via Actions → Deploy.
+
+Local fallback, ship the standalone bundle to the selected server:
 
 ```sh
 sh scripts/deploy-standalone.sh                 # interactive server picker
 sh scripts/deploy-standalone.sh PersonalVPS     # direct
 ```
+
+`./deploy-personalvps.sh` at the repo root is a legacy wrapper around the
+same target — always via the `PersonalVPS` ssh alias, never a hardcoded IP.
+Prefer `scripts/deploy-standalone.sh` (it ships only the standalone bundle).
 
 What it does:
 
