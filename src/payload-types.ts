@@ -433,6 +433,7 @@ export interface Post {
         name?: string | null;
       }[]
     | null;
+  isPublication?: boolean | null;
   tags?:
     | {
         tag?: string | null;
@@ -1502,6 +1503,7 @@ export interface PostsSelect<T extends boolean = true> {
         id?: T;
         name?: T;
       };
+  isPublication?: T;
   tags?:
     | T
     | {

@@ -220,6 +220,15 @@ export const Posts: CollectionConfig<'posts'> = {
       ],
     },
     {
+      name: 'isPublication',
+      type: 'checkbox',
+      label: 'Mark as Publication',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'tags',
       type: 'array',
       fields: [
