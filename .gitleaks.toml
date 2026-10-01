@@ -1,0 +1,13 @@
+# Gitleaks config: default rules + a targeted rule for the exact class of
+# leak this repo suffered (DB password inside a committed config file).
+# Historical hits are baselined in .gitleaksignore — never add NEW
+# fingerprints there; fix the leak instead.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "postgres-credentials-in-code"
+description = "Postgres connection URI with embedded password committed to source"
+regex = '''(?i)postgres(ql)?://[^/\s:'"]+:[^/\s@'"]+@'''
+tags = ["database", "credentials"]

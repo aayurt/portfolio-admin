@@ -1,0 +1,14 @@
+# Local pre-commit gate: blocks commits containing secrets.
+# Install once:  brew install pre-commit gitleaks && pre-commit install
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+  - repo: local
+    hooks:
+      - id: no-env-files
+        name: forbid .env files
+        entry: sh -c 'git diff --cached --name-only | grep -Eq "(^|/)\.env(\.|$)" && { echo "BLOCKED: .env file staged for commit"; exit 1; }; exit 0'
+        language: system
+        pass_filenames: false

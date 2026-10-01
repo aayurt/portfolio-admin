@@ -1,0 +1,8 @@
+# Baselines for leaks that existed BEFORE the gitleaks gate (all rotated —
+# see git history: f2d5066 offloaded secrets to server .env). Never add new
+# fingerprints here; fix the leak instead.
+acdb5bf3c28f907a43fae9dc70df91d1d38f6340:ecosystem.config.cjs:postgres-credentials-in-code:21
+9d2e62cbd14be907fd27c960b755c9b9f7d988f1:.github/workflows/deployer.yml:postgres-credentials-in-code:67
+69bc804fcb32b7e415a83401c4019c9046b7d325:.github/workflows/deployer.yml:postgres-credentials-in-code:26
+d54f138a44c0b766dc512772d70af89281d0e2ad:.github/workflows/deployer.yml:postgres-credentials-in-code:39
+9d390c3f1a42aecad5187d5b3e8ebd1678c33825:.env.example:postgres-credentials-in-code:2
