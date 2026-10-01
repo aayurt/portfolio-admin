@@ -76,6 +76,7 @@ export interface Config {
     projects: Project;
     abouts: About;
     galleries: Gallery;
+    solutions: Solution;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -97,6 +98,7 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     abouts: AboutsSelect<false> | AboutsSelect<true>;
     galleries: GalleriesSelect<false> | GalleriesSelect<true>;
+    solutions: SolutionsSelect<false> | SolutionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -245,6 +247,10 @@ export interface Tenant {
    */
   allowPublicRead?: boolean | null;
   avatar?: (number | null) | Media;
+  /**
+   * Resume/CV file uploaded via Media (served publicly by Payload). Used by the frontend Resume buttons.
+   */
+  cv?: (number | null) | Media;
   email?: string | null;
   location?: string | null;
   languages?:
@@ -866,6 +872,48 @@ export interface Project {
   client?: string | null;
   role?: string | null;
   timeframe?: string | null;
+  /**
+   * Quantified impact metrics, e.g. value "90%+" with label "User adoption"
+   */
+  metrics?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Key capabilities, each a bold title plus one-line description
+   */
+  features?:
+    | {
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Outcome-oriented, quantified bullets
+   */
+  benefits?:
+    | {
+        benefit?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Technologies used, e.g. Next.js, Payload CMS, PostgreSQL
+   */
+  techStack?:
+    | {
+        tech?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  links?: {
+    liveUrl?: string | null;
+    repoUrl?: string | null;
+  };
   images?: (number | Media)[] | null;
   updatedAt: string;
   createdAt: string;
@@ -932,6 +980,75 @@ export interface Gallery {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Solution offerings shown in the Solutions carousel. Add as many as you like.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "solutions".
+ */
+export interface Solution {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  /**
+   * Category tag shown on the card, e.g. "AI/ML Automation"
+   */
+  subtitle?: string | null;
+  /**
+   * One-sentence summary shown on the card.
+   */
+  shortDescription?: string | null;
+  /**
+   * Longer description shown on the card.
+   */
+  description?: string | null;
+  /**
+   * Quantified impact metrics, e.g. value "90%+" with label "User adoption"
+   */
+  metrics?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Key capabilities, each a bold title plus one-line description
+   */
+  features?:
+    | {
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Outcome-oriented, quantified bullets
+   */
+  benefits?:
+    | {
+        benefit?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Technologies used, e.g. Next.js, Payload CMS, PostgreSQL
+   */
+  techStack?:
+    | {
+        tech?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  links?: {
+    liveUrl?: string | null;
+    repoUrl?: string | null;
+  };
+  slug?: string | null;
+  slugLock?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1160,6 +1277,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'galleries';
         value: number | Gallery;
+      } | null)
+    | ({
+        relationTo: 'solutions';
+        value: number | Solution;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1556,6 +1677,7 @@ export interface TenantsSelect<T extends boolean = true> {
   slug?: T;
   allowPublicRead?: T;
   avatar?: T;
+  cv?: T;
   email?: T;
   location?: T;
   languages?:
@@ -1605,6 +1727,38 @@ export interface ProjectsSelect<T extends boolean = true> {
   client?: T;
   role?: T;
   timeframe?: T;
+  metrics?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  features?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  benefits?:
+    | T
+    | {
+        benefit?: T;
+        id?: T;
+      };
+  techStack?:
+    | T
+    | {
+        tech?: T;
+        id?: T;
+      };
+  links?:
+    | T
+    | {
+        liveUrl?: T;
+        repoUrl?: T;
+      };
   images?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1655,6 +1809,53 @@ export interface GalleriesSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "solutions_select".
+ */
+export interface SolutionsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  subtitle?: T;
+  shortDescription?: T;
+  description?: T;
+  metrics?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  features?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  benefits?:
+    | T
+    | {
+        benefit?: T;
+        id?: T;
+      };
+  techStack?:
+    | T
+    | {
+        tech?: T;
+        id?: T;
+      };
+  links?:
+    | T
+    | {
+        liveUrl?: T;
+        repoUrl?: T;
+      };
+  slug?: T;
+  slugLock?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -20,6 +20,7 @@ import { Media } from './collections/Media';
 import { plugins } from './plugins';
 import { getServerSideURL } from './utilities/getURL';
 import { Galleries } from './collections/Galleries';
+import { Solutions } from './collections/Solutions';
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -77,7 +78,8 @@ export default buildConfig({
     Tenants,
     Projects,
     Abouts,
-    Galleries
+    Galleries,
+    Solutions,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

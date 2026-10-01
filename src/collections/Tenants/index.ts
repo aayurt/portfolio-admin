@@ -103,6 +103,14 @@ export const Tenants: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'cv',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Resume/CV file uploaded via Media (served publicly by Payload). Used by the frontend Resume buttons.',
+      },
+    },
+    {
       name: 'email',
       type: 'email',
     },
@@ -218,6 +226,7 @@ export const Tenants: CollectionConfig = {
 
         const tenant = await req.payload.find({
           collection: 'tenants',
+          depth: 2,
           where: {
             slug: {
               equals: slug,

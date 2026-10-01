@@ -268,7 +268,9 @@ export const Posts: CollectionConfig<'posts'> = {
         }
         const posts = await req.payload.find({
           collection: 'posts',
-          depth: 0,
+          // depth 1 populates heroImage + block media for the frontend cards,
+          // while avoiding the deep recursion (tenant -> avatar -> ...) that made depth 2 slow
+          depth: 1,
           where: {
             tenant: {
               equals: getTenant.docs[0]?.id,

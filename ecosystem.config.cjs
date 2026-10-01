@@ -3,12 +3,10 @@ module.exports = {
     {
       name: 'multi-tenant-portfolio',
       cwd: '/var/www/portfolio-admin',
-      script: '.next/standalone/server.js',
-      // Node 24 REQUIRED: the bundle uses the global File API (missing on the
-      // VPS default Node 18 → "ReferenceError: File is not defined"). pm2
-      // ignores `interpreter` in cluster mode, so fork is mandatory too —
-      // no scaling loss on a single-CPU box.
-      interpreter: '/root/.nvm/versions/node/v24.13.1/bin/node',
+      script: '/var/www/portfolio-admin/.next/standalone/server.js',
+      // Fork mode: cluster mode crash-loops this app on the VPS (silent
+      // restarts under memory pressure). The box has a single CPU, so there
+      // is no scaling loss from using one fork.
       instances: 1,
       exec_mode: 'fork',
 
@@ -18,10 +16,9 @@ module.exports = {
 
       // 🟢 SAFETY 2: Tell Node/V8 to be aggressive with garbage collection
       // --max-old-space-size: Sets the limit where Node starts GC heavily.
-      // --gc-interval: Frequency of the garbage collector.
-      // --env-file: load runtime secrets (DATABASE_URI, PAYLOAD_SECRET, …)
-      // from /var/www/portfolio-admin/.env — never committed, never synced
-      // by deploys (see DEPLOY.md). No secrets in this file.
+      // --env-file: load DATABASE_URI, PAYLOAD_SECRET, PREVIEW_SECRET,
+      // CRON_SECRET and MEDIA_STATIC_DIR from /var/www/portfolio-admin/.env
+      // (kept off the server, never committed to git).
       node_args: '--max-old-space-size=300 --env-file=.env',
 
       env: {

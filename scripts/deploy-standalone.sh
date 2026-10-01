@@ -1,75 +1,159 @@
 #!/bin/bash
 set -euo pipefail
 
-# Builds the Payload admin locally, then deploys the standalone bundle to the
-# selected server and reloads pm2.
-#
-# Usage:
-#   sh scripts/deploy-standalone.sh [server]     # e.g. sh scripts/deploy-standalone.sh PersonalVPS
-#
-# The server is an ssh alias. Defaults to PersonalVPS (interactive picker when
-# stdin is a terminal and no arg was given).
-
-REMOTE_DIR="/var/www/portfolio-admin"
-PM2_APP="multi-tenant-portfolio"
-REMOTE_PORT="3001"
-# Node 24 is REQUIRED on the server (global File API, --env-file). Must match
-# the `interpreter` pinned in ecosystem.config.cjs.
-NODE24="/root/.nvm/versions/node/v24.13.1/bin"
+# ── Configuration ──────────────────────────────────────────────────────────
+HOST=""                                     # ssh alias; chosen below or passed as arg
+REMOTE_DIR="/var/www/portfolio-admin"       # deploy root on the server
 LOCAL_DIR="$(dirname "$0")/.."
+# Extra native packages to bootstrap for linux-x64, space separated, e.g.
+#   NATIVE_DEPS="bcrypt@5.1.1 canvas@2.11.2" ./scripts/deploy-standalone.sh
+NATIVE_DEPS="${NATIVE_DEPS:-}"
+# ───────────────────────────────────────────────────────────────────────────
 
-HOST="${1:-}"
-if [ -z "$HOST" ] && [ -t 0 ]; then
+LOCAL_ONLY=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --local-only) LOCAL_ONLY=1 ;;
+    --host) HOST="${2:-}"; shift ;;
+    -h|--help) echo "Usage: $0 [--local-only] [--host <alias>]"; exit 0 ;;
+    *) HOST="$1" ;;
+  esac
+  shift
+done
+
+# Interactive host selection when none was passed.
+if [ "$LOCAL_ONLY" = "0" ] && [ -z "$HOST" ]; then
   echo "Choose a deploy target:"
   echo "  1) PersonalVPS"
-  printf "  [1, default 1]: "
+  echo "  2) my-vps"
+  printf "  [1/2, default 1]: "
   read -r choice
-  HOST="PersonalVPS"
+  case "$choice" in
+    2|my-vps) HOST="my-vps" ;;
+    *) HOST="PersonalVPS" ;;
+  esac
 fi
-HOST="${HOST:-PersonalVPS}"
-echo "Deploy target: $HOST"
+
+if [ "$LOCAL_ONLY" = "0" ]; then
+  echo "Deploy target: $HOST"
+fi
 
 cd "$LOCAL_DIR"
 
-echo "=== 1/7 Building Next.js standalone (uses local .env) ==="
-pnpm install --frozen-lockfile
-pnpm run build
+echo "=== 1/6 Building Next.js standalone ==="
+NODE_OPTIONS=--no-deprecation npx next build
 
 STANDALONE=".next/standalone"
 
 echo ""
-echo "=== 2/7 Preparing standalone folder ==="
+echo "=== 2/6 Preparing standalone folder ==="
 [ -d public ] && cp -r public "$STANDALONE/"
 [ -d .next/static ] && cp -r .next/static "$STANDALONE/.next/"
+cp ecosystem.config.cjs package.json "$STANDALONE/"
 
 echo ""
-echo "=== 3/7 Syncing to server ==="
-rsync -avz \
-  --exclude='node_modules' \
-  --exclude='.git' \
-  --exclude='.next/cache' \
-  --exclude='.env' \
-  -e ssh \
+echo "=== 3/6 Bootstrapping linux-x64 native binaries ==="
+# The local build installs darwin binaries. Re-fetch the linux variants with
+# npm's platform flags (works from macOS) and merge them into the pnpm store,
+# linking them the same way pnpm does. Covers sharp (any version, incl. the
+# @img/sharp-linux-x64 optional deps of sharp >= 0.33) plus NATIVE_DEPS.
+# Merge a scratch npm install into the standalone's pnpm store and link it
+# the same way pnpm does, so the linux binaries are found at runtime.
+merge_into_store() {
+  local scratch="$1"
+  local pj rel ver encoded target prefix name nmdir
+  while IFS= read -r pj; do
+    rel="${pj#"$scratch/node_modules/"}"
+    rel="${rel%/package.json}"
+    case "$rel" in .bin|.*|node_modules/*) continue ;; esac
+    ver="$(node -p "require('$pj').version")"
+    encoded="${rel//\//+}"
+    target="$STANDALONE/node_modules/.pnpm/${encoded}@${ver}/node_modules/${rel}"
+    mkdir -p "$(dirname "$target")"
+    rsync -a "$(dirname "$pj")/" "$target/"
+
+    # Link exactly like pnpm: scoped packages get a top-level link plus a
+    # link inside every existing package's nested node_modules/<scope>.
+    case "$rel" in
+      @*/*)
+        name="${rel#*/}"
+        prefix="../"
+        while IFS= read -r nmdir; do
+          if [ ! -e "$nmdir/$name" ]; then
+            ln -sfn "../../../${encoded}@${ver}/node_modules/${rel}" "$nmdir/$name"
+          fi
+        done < <(find "$STANDALONE/node_modules/.pnpm" -mindepth 3 -maxdepth 3 -type d -name "${rel%%/*}" 2>/dev/null || true)
+        ;;
+      *) prefix="" ;;
+    esac
+
+    # Only create missing top-level links so existing direct-dep links (e.g.
+    # node_modules/sharp -> sharp@0.32.6) keep pointing at their own version.
+    if [ ! -e "$STANDALONE/node_modules/$rel" ]; then
+      mkdir -p "$(dirname "$STANDALONE/node_modules/$rel")"
+      ln -sfn "${prefix}.pnpm/${encoded}@${ver}/node_modules/${rel}" "$STANDALONE/node_modules/$rel"
+    fi
+    echo "   + $rel@$ver (linux-x64)"
+  done < <(find "$scratch/node_modules" -mindepth 1 -maxdepth 3 -name package.json)
+}
+
+install_linux_natives() {
+  local pkgs=()
+  local v
+  for v in $(ls "$STANDALONE/node_modules/.pnpm" 2>/dev/null | grep -E '^sharp@' | sed 's/^sharp@//' || true); do
+    pkgs+=("sharp@$v")
+  done
+  if [ -n "$NATIVE_DEPS" ]; then
+    read -ra extra <<< "$NATIVE_DEPS"
+    pkgs+=("${extra[@]}")
+  fi
+  if [ "${#pkgs[@]}" -eq 0 ]; then
+    echo "   no native packages found, nothing to do"
+    return
+  fi
+
+  # One scratch install per package: npm dedupes same-name packages to a
+  # single version, and the npm_config_* env vars are what both npm's
+  # optional-dep resolution and sharp's prebuild installer actually respect.
+  local pkg scratch
+  for pkg in "${pkgs[@]}"; do
+    echo "   fetching linux binaries for: $pkg"
+    scratch="$(mktemp -d)"
+    ( cd "$scratch" && npm init -y >/dev/null 2>&1 && \
+      npm_config_platform=linux npm_config_os=linux npm_config_arch=x64 npm_config_libc=glibc \
+      npm install --no-save --os=linux --cpu=x64 --libc=glibc "$pkg" >/dev/null 2>&1 ) || true
+    merge_into_store "$scratch"
+    rm -rf "$scratch"
+  done
+}
+install_linux_natives
+
+if [ "$LOCAL_ONLY" = "1" ]; then
+  echo ""
+  echo "=== LOCAL-ONLY: skipping sync. Standalone ready at: $LOCAL_DIR/$STANDALONE ==="
+  exit 0
+fi
+
+echo ""
+echo "=== 4/6 Syncing to VPS ==="
+rsync -avz --delete --progress \
   "$STANDALONE/" \
   "$HOST:$REMOTE_DIR/.next/standalone/"
 
 echo ""
-echo "=== 4/7 Rebuilding sharp for Node 24 on server ==="
-# sharp's native binding is ABI-tied: a binary built for Node 18 segfaults
-# silently seconds after boot under Node 24. Always rebuild on the target.
-ssh "$HOST" "export PATH=$NODE24:\$PATH && cd $REMOTE_DIR && (npm rebuild sharp || pnpm rebuild sharp)"
-
-echo ""
-echo "=== 5/7 Syncing ecosystem.config.cjs ==="
+echo "=== 5/6 Ensuring server .env + copying ecosystem.config.cjs ==="
+# Standalone server.js chdirs into .next/standalone, so the uploads dir must
+# be pinned explicitly. Add MEDIA_STATIC_DIR to the server .env if missing.
+ssh "$HOST" "cd $REMOTE_DIR && grep -q '^MEDIA_STATIC_DIR=' .env 2>/dev/null || \
+  echo 'MEDIA_STATIC_DIR=$REMOTE_DIR/public/media' >> .env"
 rsync -avz ecosystem.config.cjs "$HOST:$REMOTE_DIR/ecosystem.config.cjs"
 
 echo ""
-echo "=== 6/7 Reloading PM2 ==="
-ssh "$HOST" "cd $REMOTE_DIR && (pm2 reload ecosystem.config.cjs --only $PM2_APP --update-env || pm2 start ecosystem.config.cjs --only $PM2_APP) && pm2 save"
+echo "=== 6/6 Restarting PM2 ==="
+# delete + start (not startOrRestart): PM2 only applies the config's cwd on a
+# fresh start, and restart kept the stale /var/www cwd which broke --env-file.
+ssh "$HOST" "source ~/.nvm/nvm.sh && cd $REMOTE_DIR && \
+  pm2 delete multi-tenant-portfolio 2>/dev/null; pm2 start ecosystem.config.cjs && pm2 save"
 
 echo ""
-echo "=== 7/7 Verifying ==="
-ssh "$HOST" "sleep 8; curl -s -o /dev/null -w 'admin api:%{http_code}\n' --max-time 25 'http://localhost:$REMOTE_PORT/admin/api/tenants?limit=1'"
-
-echo ""
-echo "Done. Deployed admin standalone build to $HOST:$REMOTE_DIR"
+echo "Done. Deployed standalone build to $HOST:$REMOTE_DIR"

@@ -4,6 +4,7 @@ dist
 node_modules
 .DS_Store
 .env
+.env.prod
 .next
 .vercel
 
@@ -15,4 +16,8 @@ public/sitemap*.xml
 serviceAccountKey.json
 next.zip
 .env.production
+
+# Freebuff local data
+.freebuff
+
 tsconfig.tsbuildinfo

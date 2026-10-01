@@ -73,6 +73,85 @@ export const Projects: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'metrics',
+      type: 'array',
+      admin: {
+        description: 'Quantified impact metrics, e.g. value "90%+" with label "User adoption"',
+      },
+      fields: [
+        {
+          name: 'value',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'features',
+      type: 'array',
+      admin: {
+        description: 'Key capabilities, each a bold title plus one-line description',
+      },
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+        },
+      ],
+    },
+    {
+      name: 'benefits',
+      type: 'array',
+      admin: {
+        description: 'Outcome-oriented, quantified bullets',
+      },
+      fields: [
+        {
+          name: 'benefit',
+          type: 'text',
+        },
+      ],
+    },
+    {
+      name: 'techStack',
+      type: 'array',
+      admin: {
+        description: 'Technologies used, e.g. Next.js, Payload CMS, PostgreSQL',
+      },
+      fields: [
+        {
+          name: 'tech',
+          type: 'text',
+        },
+      ],
+    },
+    {
+      name: 'links',
+      type: 'group',
+      fields: [
+        {
+          name: 'liveUrl',
+          type: 'text',
+          label: 'Live demo URL',
+        },
+        {
+          name: 'repoUrl',
+          type: 'text',
+          label: 'Source/repo URL',
+        },
+      ],
+    },
+    {
       name: 'images',
       type: 'relationship',
       relationTo: 'media',
@@ -103,7 +182,8 @@ export const Projects: CollectionConfig = {
         }
         const projects = await req.payload.find({
           collection: 'projects',
-          depth: 0,
+          // depth 1 populates images/media for the frontend cards
+          depth: 1,
           where: {
             tenant: {
               equals: getTenant.docs[0]?.id,
