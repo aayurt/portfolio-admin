@@ -1,6 +1,7 @@
+import path from 'node:path'
+import { readFile } from 'node:fs/promises'
 import { getMessaging } from 'firebase-admin/messaging'
-import { cert, initializeApp, getApps, ServiceAccount } from 'firebase-admin/app'
-import serviceAccountKey from '../../serviceAccountKey.json'
+import { cert, initializeApp, getApps, type ServiceAccount } from 'firebase-admin/app'
 
 type NotificationData = {
   id?: string
@@ -15,11 +16,25 @@ type SendFCMNotificationParams = {
   notification: NotificationData
 }
 
-// Initialize Firebase Admin if not already initialized
-if (!getApps().length) {
-  initializeApp({
-    credential: cert(serviceAccountKey as ServiceAccount),
-  })
+// Credentials resolve lazily (at send time, never at import/build time):
+// 1. FIREBASE_SERVICE_ACCOUNT env var (inline JSON — CI + server .env), else
+// 2. serviceAccountKey.json at the repo root (local dev only — gitignored,
+//    forbidden by mcp-rules.json, never committed).
+async function loadServiceAccount(): Promise<ServiceAccount> {
+  const inline = process.env.FIREBASE_SERVICE_ACCOUNT
+  if (inline) {
+    return JSON.parse(inline) as ServiceAccount
+  }
+  const raw = await readFile(path.join(process.cwd(), 'serviceAccountKey.json'), 'utf8')
+  return JSON.parse(raw) as ServiceAccount
+}
+
+// Initialize Firebase Admin on first use. Missing credentials throw a clear
+// error only when a notification is actually sent — builds and boots stay green.
+async function ensureFirebaseAdmin(): Promise<void> {
+  if (!getApps().length) {
+    initializeApp({ credential: cert(await loadServiceAccount()) })
+  }
 }
 
 export const sendFCMNotification = async ({
@@ -32,6 +47,7 @@ export const sendFCMNotification = async ({
       return
     }
 
+    await ensureFirebaseAdmin()
     const messaging = getMessaging()
     const message = {
       notification: {
@@ -76,6 +92,7 @@ export const sendFCMTopicNotification = async ({
       return
     }
 
+    await ensureFirebaseAdmin()
     const messaging = getMessaging()
     const message = {
       notification: {

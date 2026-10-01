@@ -11,6 +11,8 @@
 #   NEXT_PUBLIC_SLUG, CRON_SECRET, PREVIEW_SECRET
 #   (plus Firebase / Better Auth / Google OAuth secrets listed below —
 #   empty is allowed when the feature is unused)
+#   FIREBASE_SERVICE_ACCOUNT (inline service-account JSON; alternatively
+#   keep serviceAccountKey.json on the server — either feeds FCM at runtime)
 #
 # The server .env is NEVER overwritten (see DEPLOY.md). Build-time env
 # comes from secrets on the runner only.
@@ -51,6 +53,9 @@ jobs:
       BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      # Inline service-account JSON (optional at build time; required at
+      # runtime unless serviceAccountKey.json exists on the server).
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
