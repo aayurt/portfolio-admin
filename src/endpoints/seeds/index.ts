@@ -257,7 +257,7 @@ export const seed = async ({
     // Find project specific images if any, otherwise skip images for now or link generic
     // The seed data has no images defined in the array yet.
     // If we want to link the covers:
-    let relatedImages = []
+    const relatedImages: (string | number)[] = []
     if (project.slug === 'afno') {
       const cover = mediaDocs['afno-cover-01.png']
       if (cover) relatedImages.push(cover.id)
